@@ -5,19 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes deepMode {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.4); }
-        }
-
-        @keyframes boxMode {
-            0%, 25% { transform: scale(1); }
-            25%, 50% { transform: scale(1.4); }
-            50%, 75% { transform: scale(1.4); }
-            75%, 100% { transform: scale(1); }
-        }
-
-        /* Animation classes - only added when 'isActive' is true */
+        @keyframes deepMode { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+        @keyframes boxMode { 0%, 25% { transform: scale(1); } 25%, 50% { transform: scale(1.4); } 50%, 75% { transform: scale(1.4); } 75%, 100% { transform: scale(1); } }
+        
         .run-deep { animation: deepMode var(--duration) ease-in-out infinite !important; }
         .run-box { animation: boxMode var(--duration) linear infinite !important; }
         
@@ -27,12 +17,16 @@
 </head>
 <body id="body-bg" class="transition-all duration-1000 min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500">
 
+    <audio id="ocean-sound" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
+
     <script>
         let currentMode = 'deep';
         let breathCount = 0;
         let breathTimer = null;
         let isActive = false;
-        let selectedSeconds = 8; // Default
+        let selectedSeconds = 8;
+        const oceanAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/1238/1238-preview.mp3');
+        oceanAudio.loop = true;
 
         function showScreen(id, mode = null) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
@@ -52,13 +46,10 @@
 
         function setupBreatheScreen() {
             const speedControls = document.getElementById('speed-controls');
-            const speeds = currentMode === 'box' ? [4, 6, 8, 10] : [6, 8, 10];
-            
+            const speeds = (currentMode === 'box') ? [4, 6, 8, 10] : [6, 8, 10];
             speedControls.innerHTML = speeds.map((s) => 
-                `<button onclick="changeSpeed(${s}, this)" 
-                class="speed-btn flex-1 py-3 rounded-xl text-sm border border-white/20 transition-all ${s === selectedSeconds ? 'btn-active' : ''}">${s}s</button>`
+                `<button onclick="changeSpeed(${s}, this)" class="speed-btn flex-1 py-3 rounded-xl text-sm border border-white/20 transition-all ${s === selectedSeconds ? 'btn-active' : ''}">${s}s</button>`
             ).join('');
-
             resetPractice();
         }
 
@@ -66,33 +57,33 @@
             selectedSeconds = s;
             document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            resetPractice(); // Stopping the old rhythm to allow a fresh "Ready" start
+            resetPractice();
         }
 
         function togglePractice() {
             if (!isActive) {
                 startPractice();
+            } else {
+                resetPractice();
             }
         }
 
         function startPractice() {
             isActive = true;
-            const totalCycleTime = currentMode === 'box' ? selectedSeconds * 4 : selectedSeconds * 2;
+            const totalCycleTime = (currentMode === 'box') ? selectedSeconds * 4 : selectedSeconds * 2;
             document.documentElement.style.setProperty('--duration', totalCycleTime + 's');
 
             const circle = document.getElementById('main-circle');
-            const startPrompt = document.getElementById('start-prompt');
-            const countDisplay = document.getElementById('count-display');
-
-            startPrompt.classList.add('hidden');
-            countDisplay.classList.remove('hidden');
+            document.getElementById('start-prompt').classList.add('hidden');
+            document.getElementById('count-display').classList.remove('hidden');
             
-            circle.style.animation = 'none';
-            void circle.offsetWidth; 
             circle.classList.add(currentMode === 'box' ? 'run-box' : 'run-deep');
 
-            breathCount = 0;
-            document.getElementById('breath-num').innerText = "0";
+            // Play Sound if Ujjayi
+            if (currentMode === 'ujjayi') {
+                oceanAudio.play();
+            }
+
             breathTimer = setInterval(() => {
                 breathCount++;
                 document.getElementById('breath-num').innerText = breathCount;
@@ -101,19 +92,21 @@
 
         function resetPractice() {
             isActive = false;
-            if(breathTimer) clearInterval(breathTimer);
+            clearInterval(breathTimer);
+            oceanAudio.pause();
+            oceanAudio.currentTime = 0;
             
             const circle = document.getElementById('main-circle');
-            const startPrompt = document.getElementById('start-prompt');
-            const countDisplay = document.getElementById('count-display');
-
             circle.classList.remove('run-deep', 'run-box');
             circle.style.animation = 'none';
             
-            if(startPrompt) startPrompt.classList.remove('hidden');
-            if(countDisplay) countDisplay.classList.add('hidden');
-            
-            document.getElementById('mode-label').innerText = currentMode === 'box' ? `Box: ${selectedSeconds}s per phase` : `Deep: ${selectedSeconds}s inhale/exhale`;
+            document.getElementById('start-prompt').classList.remove('hidden');
+            document.getElementById('count-display').classList.add('hidden');
+            document.getElementById('breath-num').innerText = "0";
+            breathCount = 0;
+
+            const modeNames = { 'deep': 'Deep Breathing', 'box': 'Box Breathing', 'ujjayi': 'Ujjayi (Oceanic)' };
+            document.getElementById('mode-label').innerText = modeNames[currentMode] + `: ${selectedSeconds}s phase`;
         }
     </script>
 
@@ -126,20 +119,23 @@
         </button>
     </div>
 
-    <div id="mode-select" class="screen hidden min-h-screen flex flex-col items-center justify-center p-8 space-y-6 text-center">
-        <h2 class="text-xl font-light tracking-[0.3em] mb-10 uppercase">Select Practice</h2>
-        <button onclick="showScreen('breathe', 'deep')" class="w-full max-w-xs p-8 rounded-[2.5rem] glass border border-white/20 active:scale-95 transition-all">
-            <h3 class="text-xl font-medium tracking-wide">Deep Breathing</h3>
+    <div id="mode-select" class="screen hidden min-h-screen flex flex-col items-center justify-center p-8 space-y-4 text-center">
+        <h2 class="text-xl font-light tracking-[0.3em] mb-6 uppercase">Select Practice</h2>
+        <button onclick="showScreen('breathe', 'deep')" class="w-full max-w-xs p-6 rounded-[2rem] glass border border-white/20 active:scale-95 transition-all">
+            <h3 class="text-lg font-medium">Deep Breathing</h3>
         </button>
-        <button onclick="showScreen('breathe', 'box')" class="w-full max-w-xs p-8 rounded-[2.5rem] glass border border-white/20 active:scale-95 transition-all">
-            <h3 class="text-xl font-medium tracking-wide">Box Breathing</h3>
+        <button onclick="showScreen('breathe', 'box')" class="w-full max-w-xs p-6 rounded-[2rem] glass border border-white/20 active:scale-95 transition-all">
+            <h3 class="text-lg font-medium">Box Breathing</h3>
         </button>
-        <button onclick="showScreen('home')" class="text-white/40 pt-10 text-[10px] tracking-widest uppercase">Back</button>
+        <button onclick="showScreen('breathe', 'ujjayi')" class="w-full max-w-xs p-6 rounded-[2rem] glass border border-white/20 active:scale-95 transition-all border-emerald-400/50">
+            <h3 class="text-lg font-medium">Ujjayi (Oceanic)</h3>
+            <p class="text-[9px] opacity-60 uppercase tracking-widest mt-1">With Sound</p>
+        </button>
+        <button onclick="showScreen('home')" class="text-white/40 pt-6 text-[10px] tracking-widest uppercase">Back</button>
     </div>
 
     <div id="breathe" class="screen hidden min-h-screen flex flex-col items-center justify-between py-16 px-6">
         <button onclick="showScreen('home')" class="text-white/50 text-[10px] uppercase tracking-widest">End Practice</button>
-
         <div class="flex flex-col items-center">
             <div id="main-circle" onclick="togglePractice()" class="w-60 h-60 rounded-full border-[14px] border-white/30 flex items-center justify-center shadow-2xl cursor-pointer active:scale-95 transition-transform duration-300 bg-white/5">
                 <div id="start-prompt" class="flex flex-col items-center">
@@ -153,12 +149,10 @@
             </div>
             <p id="mode-label" class="mt-12 text-xs tracking-[0.2em] uppercase font-light text-white/80"></p>
         </div>
-
         <div class="w-full max-w-xs text-center">
             <p class="text-[10px] uppercase tracking-widest text-white/50 mb-4 font-bold">Seconds per phase</p>
             <div id="speed-controls" class="flex justify-between glass p-1 rounded-2xl border border-white/10 gap-2"></div>
         </div>
     </div>
-
 </body>
 </html>
