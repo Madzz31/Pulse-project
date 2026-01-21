@@ -1,119 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Samyama</title>
     <style>
-        /* BASE STYLES - Guaranteed to work in any browser */
-        body { margin: 0; padding: 0; font-family: sans-serif; background: #2d0b5a; color: white; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .screen { display: none; width: 100%; max-width: 400px; padding: 20px; flex-direction: column; align-items: center; }
-        .active { display: flex; }
+        body { margin: 0; background: linear-gradient(#2d0b5a, #b030b0); color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: 1s; }
+        #app-container { width: 100%; max-width: 400px; padding: 20px; }
         
-        /* THE BUTTONS */
-        .btn { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 20px; margin: 10px; width: 100%; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; transition: 0.3s; }
-        .btn:hover { background: rgba(255,255,255,0.2); }
-        .btn-small { padding: 10px; font-size: 10px; border-radius: 10px; width: auto; flex: 1; }
-        .active-btn { background: rgba(255,255,255,0.4); }
-
-        /* THE BREATHING CIRCLE */
-        #main-circle { width: 200px; height: 200px; border: 10px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 40px auto; cursor: pointer; transition: transform 0.1s; }
+        .btn { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 20px; margin: 10px 0; width: 100%; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .btn:active { transform: scale(0.95); background: rgba(255,255,255,0.3); }
         
-        /* ANIMATIONS */
-        @keyframes deep { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); } }
-        @keyframes box { 0%, 25% { transform: scale(1); } 25%, 50% { transform: scale(1.5); } 50%, 75% { transform: scale(1.5); } 75%, 100% { transform: scale(1); } }
-        .run-deep { animation: deep var(--d) ease-in-out infinite; }
-        .run-box { animation: box var(--d) linear infinite; }
+        #circle { width: 220px; height: 220px; border: 12px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 30px auto; cursor: pointer; }
+        
+        /* Animations */
+        @keyframes breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+        @keyframes box { 0%, 25% { transform: scale(1); } 25%, 50% { transform: scale(1.4); } 50%, 75% { transform: scale(1.4); } 75%, 100% { transform: scale(1); } }
+        .anim-breath { animation: breath var(--d) ease-in-out infinite; }
+        .anim-box { animation: box var(--d) linear infinite; }
 
         .hidden { display: none; }
-        .row { display: flex; gap: 10px; width: 100%; margin-top: 20px; }
+        .mode-label { font-size: 10px; letter-spacing: 4px; opacity: 0.7; margin-bottom: 40px; }
     </style>
 </head>
 <body>
 
-    <div id="home" class="screen active">
-        <h1 style="font-weight: 200; letter-spacing: 8px;">SAMYAMA</h1>
-        <p style="opacity: 0.6; font-size: 10px; letter-spacing: 4px; margin-bottom: 50px;">STILLNESS IN MOTION</p>
-        <button class="btn" onclick="nav('mode-select')">START PRANAYAMA</button>
-    </div>
+    <div id="app-container">
+        <div id="view-home">
+            <h1 style="font-weight: 200; letter-spacing: 8px;">SAMYAMA</h1>
+            <p class="mode-label">STILLNESS IN MOTION</p>
+            <button class="btn" onclick="goModeSelect()">START PRANAYAMA</button>
+        </div>
 
-    <div id="mode-select" class="screen">
-        <h3>SELECT PRACTICE</h3>
-        <button class="btn" onclick="startB('deep')">Deep Breathing</button>
-        <button class="btn" onclick="startB('box')">Box Breathing</button>
-        <button class="btn" onclick="startB('ujjayi')">Ujjayi (Oceanic)</button>
-        <p onclick="nav('home')" style="cursor:pointer; opacity:0.5; font-size:12px;">Back</p>
-    </div>
+        <div id="view-modes" class="hidden">
+            <h2 style="font-weight: 200; letter-spacing: 4px;">SELECT PRACTICE</h2>
+            <button class="btn" onclick="goBreathe('deep')">Deep Breathing</button>
+            <button class="btn" onclick="goBreathe('box')">Box Breathing</button>
+            <button class="btn" onclick="goBreathe('ujjayi')">Ujjayi (Oceanic)</button>
+            <p onclick="location.reload()" style="cursor:pointer; opacity:0.5; margin-top:20px;">Back</p>
+        </div>
 
-    <div id="breathe" class="screen">
-        <div id="main-circle" onclick="toggle()">
-            <div id="txt">TAP TO START</div>
-            <div id="counter" class="hidden">
-                <span id="num" style="font-size: 40px;">0</span><br>Cycles
+        <div id="view-breathe" class="hidden">
+            <div id="circle" onclick="toggleBreath()">
+                <div id="circle-text">TAP TO START</div>
+                <div id="circle-count" class="hidden">
+                    <span id="num" style="font-size: 50px; font-weight: 100;">0</span><br>
+                    <span style="font-size: 10px; letter-spacing: 2px;">CYCLES</span>
+                </div>
             </div>
-        </div>
-        <h4 id="label" style="letter-spacing: 3px;">MODE</h4>
-        
-        <div class="row">
-            <button class="btn btn-small snd-btn active-btn" onclick="setS('none', this)">Silent</button>
-            <button class="btn btn-small snd-btn" onclick="setS('flute', this)">Zen</button>
-            <button class="btn btn-small snd-btn" onclick="setS('ocean', this)">Waves</button>
-        </div>
-        <p onclick="nav('home')" style="margin-top:40px; cursor:pointer; opacity:0.5;">Exit</p>
-    </div>
+            <h3 id="current-mode-title" style="letter-spacing: 3px; font-weight: 400;">MODE</h3>
+            
+            <p style="font-size: 10px; margin-bottom: 10px;">SOUNDSCAPE</p>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn" style="padding:10px; font-size:10px;" onclick="changeAudio('none')">Silent</button>
+                <button class="btn" style="padding:10px; font-size:10px;" onclick="changeAudio('zen')">Zen</button>
+                <button class="btn" style="padding:10px; font-size:10px;" onclick="changeAudio('waves')">Waves</button>
+            </div>
 
-    <script>
-        let mode = 'deep', running = false, count = 0, timer = null, audio = null;
-
-        const sounds = {
-            flute: "https://actions.google.com/sounds/v1/meditation/calm_meditation.ogg",
-            ocean: "https://actions.google.com/sounds/v1/water/waves_on_shore.ogg"
-        };
-
-        function nav(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(running) stop();
-        }
-
-        function startB(m) {
-            mode = m;
-            document.getElementById('label').innerText = m.toUpperCase();
-            nav('breathe');
-        }
-
-        function setS(type, btn) {
-            if(audio) { audio.pause(); audio = null; }
-            if(type !== 'none') {
-                audio = new Audio(sounds[type]);
-                audio.loop = true;
-                if(running) audio.play();
-            }
-            document.querySelectorAll('.snd-btn').forEach(b => b.classList.remove('active-btn'));
-            btn.classList.add('active-btn');
-        }
-
-        function toggle() {
-            if(!running) {
-                running = true;
-                count = 0;
-                let cycle = (mode === 'box') ? 16 : 10; // Default speeds
-                document.body.style.setProperty('--d', cycle + 's');
-                document.getElementById('main-circle').className = (mode === 'box' ? 'run-box' : 'run-deep');
-                document.getElementById('txt').classList.add('hidden');
-                document.getElementById('counter').classList.remove('hidden');
-                if(audio) audio.play();
-                timer = setInterval(() => { count++; document.getElementById('num').innerText = count; }, cycle * 1000);
-            } else {
-                stop();
-                alert("Session Complete! Total Cycles: " + count);
-            }
-        }
-
-        function stop() {
-            running = false;
-            clearInterval(timer);
-            if(audio) { audio.pause(); audio.currentTime = 0; }
-            document.getElementById('main-circle').className = "";
-            document.getElementById('txt').classList.remove('hidden');
-            document.getElementById('counter').classList.add('hidden');
-            document.getElementById('num').innerText =
+            <p onclick="location.reload()" style="cursor:pointer; opacity
