@@ -11,7 +11,7 @@
         .run-box { animation: boxMode var(--duration) linear infinite !important; }
         .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); }
         .btn-active { background: rgba(255, 255, 255, 0.3); border-color: white !important; }
-        .modal-transition { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .instruction-overlay { transition: opacity 0.3s ease, transform 0.3s ease; }
     </style>
 </head>
 <body id="body-bg" class="transition-all duration-1000 min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500 overflow-hidden">
@@ -23,7 +23,6 @@
         let isActive = false;
         let selectedSeconds = 8;
         let currentAudio = null;
-        let startTime = null;
 
         const sounds = {
             ocean: "https://lasonotheque.org/moteur/sons/0107.mp3",
@@ -32,9 +31,18 @@
         };
 
         const instructions = {
-            deep: { title: "Deep Breathing", steps: ["Inhale slowly through your nose.", "Feel your belly expand.", "Exhale gently through your nose or mouth."] },
-            box: { title: "Box Breathing", steps: ["Inhale for the set duration.", "Hold your breath in.", "Exhale slowly.", "Hold your breath out."] },
-            ujjayi: { title: "Ujjayi (Oceanic)", steps: ["Slightly constrict the back of your throat.", "Breathe in with a soft 'ocean' sound.", "Keep that sound as you exhale."] }
+            deep: {
+                title: "Deep Breathing",
+                steps: ["Inhale slowly through your nose.", "Feel your belly expand.", "Exhale gently through your nose or mouth.", "Keep the rhythm smooth and steady."]
+            },
+            box: {
+                title: "Box Breathing",
+                steps: ["Inhale for the set duration.", "Hold your breath in for the same time.", "Exhale slowly for the same time.", "Hold your breath out before inhaling again."]
+            },
+            ujjayi: {
+                title: "Ujjayi (Oceanic)",
+                steps: ["Slightly constrict the back of your throat.", "Breathe in through your nose with a soft 'Haaa' sound.", "Keep that same ocean-like sound as you exhale.", "Focus on the sound to calm your mind."]
+            }
         };
 
         function showScreen(id, mode = null) {
@@ -46,15 +54,17 @@
                 setupBreatheScreen();
             } else {
                 document.getElementById('body-bg').className = "min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500";
-                resetPractice(false);
+                resetPractice();
             }
         }
 
         function toggleInstructions(show) {
             const overlay = document.getElementById('instruction-modal');
+            const content = instructions[currentMode];
+            document.getElementById('ins-title').innerText = content.title;
+            document.getElementById('ins-list').innerHTML = content.steps.map(s => `<li class="mb-3 opacity-90">• ${s}</li>`).join('');
+            
             if (show) {
-                document.getElementById('ins-title').innerText = instructions[currentMode].title;
-                document.getElementById('ins-list').innerHTML = instructions[currentMode].steps.map(s => `<li class="mb-3">• ${s}</li>`).join('');
                 overlay.classList.remove('hidden', 'opacity-0', 'scale-95');
             } else {
                 overlay.classList.add('opacity-0', 'scale-95');
@@ -68,7 +78,7 @@
             speedControls.innerHTML = speeds.map((s) => 
                 `<button onclick="changeSpeed(${s}, this)" class="speed-btn flex-1 py-3 rounded-xl text-sm border border-white/20 transition-all ${s === selectedSeconds ? 'btn-active' : ''}">${s}s</button>`
             ).join('');
-            resetPractice(false);
+            resetPractice();
         }
 
         function setSound(type, btn) {
@@ -77,19 +87,20 @@
                 currentAudio = new Audio(sounds[type]);
                 currentAudio.loop = true;
                 currentAudio.volume = 0.4;
-            } else { currentAudio = null; }
+            } else {
+                currentAudio = null;
+            }
             document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('bg-white/40'));
             btn.classList.add('bg-white/40');
         }
 
         function togglePractice() {
             if (!isActive) startPractice();
-            else resetPractice(true);
+            else resetPractice();
         }
 
         function startPractice() {
             isActive = true;
-            startTime = Date.now();
             const totalCycleTime = (currentMode === 'box') ? selectedSeconds * 4 : selectedSeconds * 2;
             document.documentElement.style.setProperty('--duration', totalCycleTime + 's');
             document.getElementById('start-prompt').classList.add('hidden');
@@ -102,18 +113,7 @@
             }, totalCycleTime * 1000);
         }
 
-        function resetPractice(showSummary) {
-            if (isActive && showSummary && breathCount > 0) {
-                const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(durationSeconds / 60);
-                const seconds = durationSeconds % 60;
-                const timeString = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-                
-                document.getElementById('summary-count').innerText = breathCount;
-                document.getElementById('summary-time').innerText = timeString;
-                document.getElementById('summary-modal').classList.remove('hidden', 'opacity-0', 'scale-95');
-            }
-
+        function resetPractice() {
             isActive = false;
             clearInterval(breathTimer);
             if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
@@ -123,21 +123,16 @@
             document.getElementById('start-prompt').classList.remove('hidden');
             document.getElementById('count-display').classList.add('hidden');
             document.getElementById('breath-num').innerText = "0";
+            breathCount = 0;
             const modeNames = { 'deep': 'Deep Breathing', 'box': 'Box Breathing', 'ujjayi': 'Ujjayi (Oceanic)' };
             document.getElementById('mode-label').innerText = modeNames[currentMode];
-        }
-
-        function closeSummary() {
-            document.getElementById('summary-modal').classList.add('opacity-0', 'scale-95');
-            setTimeout(() => document.getElementById('summary-modal').classList.add('hidden'), 300);
-            breathCount = 0;
         }
 
         function changeSpeed(s, btn) {
             selectedSeconds = s;
             document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            resetPractice(false);
+            resetPractice();
         }
     </script>
 
@@ -161,7 +156,7 @@
     <div id="breathe" class="screen hidden min-h-screen flex flex-col items-center justify-between py-12 px-6">
         <div class="w-full flex justify-between items-center px-4">
             <button onclick="showScreen('home')" class="text-white/50 text-[10px] uppercase tracking-widest">End Practice</button>
-            <button onclick="toggleInstructions(true)" class="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-xs italic font-serif">i</button>
+            <button onclick="toggleInstructions(true)" class="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-xs font-serif italic">i</button>
         </div>
         
         <div class="flex flex-col items-center">
@@ -172,29 +167,16 @@
             <p id="mode-label" class="mt-8 text-[10px] tracking-[0.3em] uppercase opacity-80 font-bold"></p>
         </div>
 
-        <div id="instruction-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 modal-transition opacity-0 scale-95">
-            <div class="glass w-full max-w-xs p-8 rounded-[2.5rem] border border-white/20 text-center">
-                <h3 id="ins-title" class="text-xl font-bold mb-6 uppercase tracking-widest"></h3>
+        <div id="instruction-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 instruction-overlay opacity-0 scale-95">
+            <div class="glass w-full max-w-xs p-8 rounded-[2.5rem] border border-white/20 shadow-2xl">
+                <h3 id="ins-title" class="text-xl font-bold mb-6 tracking-wide text-center uppercase"></h3>
                 <ul id="ins-list" class="text-xs leading-relaxed text-left"></ul>
-                <button onclick="toggleInstructions(false)" class="mt-8 w-full py-3 bg-white text-emerald-800 rounded-xl font-bold uppercase tracking-widest text-[10px]">Close</button>
-            </div>
-        </div>
-
-        <div id="summary-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 modal-transition opacity-0 scale-95">
-            <div class="glass w-full max-w-xs p-10 rounded-[3rem] border border-white/20 text-center">
-                <h3 class="text-xs tracking-[0.4em] uppercase opacity-60 mb-2">Practice Complete</h3>
-                <h2 class="text-3xl font-light mb-8">Well Done</h2>
-                <div class="flex justify-around mb-8">
-                    <div><p id="summary-count" class="text-3xl font-bold">0</p><p class="text-[9px] uppercase tracking-widest opacity-50">Cycles</p></div>
-                    <div class="w-px h-10 bg-white/10"></div>
-                    <div><p id="summary-time" class="text-3xl font-bold">0s</p><p class="text-[9px] uppercase tracking-widest opacity-50">Time</p></div>
-                </div>
-                <button onclick="closeSummary()" class="w-full py-4 bg-white text-emerald-900 rounded-full font-bold uppercase tracking-[0.2em] text-[10px] shadow-lg">Return to Breath</button>
+                <button onclick="toggleInstructions(false)" class="mt-8 w-full py-3 bg-white text-emerald-800 rounded-xl font-bold uppercase tracking-widest text-[10px]">Got it</button>
             </div>
         </div>
 
         <div class="w-full max-w-sm space-y-6">
-            <div class="glass p-2 rounded-2xl border border-white/10 flex justify-around text-[10px] uppercase tracking-tighter font-bold">
+            <div class="glass p-2 rounded-2xl border border-white/10 flex justify-around text-[10px] uppercase tracking-tighter">
                 <button onclick="setSound('none', this)" class="sound-btn flex-1 py-2 rounded-xl bg-white/40">Silent</button>
                 <button onclick="setSound('flute', this)" class="sound-btn flex-1 py-2 rounded-xl">Flute</button>
                 <button onclick="setSound('ocean', this)" class="sound-btn flex-1 py-2 rounded-xl">Ocean</button>
