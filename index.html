@@ -11,7 +11,7 @@
         .run-box { animation: boxMode var(--duration) linear infinite !important; }
         .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); }
         .btn-active { background: rgba(255, 255, 255, 0.3); border-color: white !important; }
-        .instruction-overlay { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .modal-transition { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body id="body-bg" class="transition-all duration-1000 min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500 overflow-hidden">
@@ -23,6 +23,7 @@
         let isActive = false;
         let selectedSeconds = 8;
         let currentAudio = null;
+        let startTime = null;
 
         const sounds = {
             ocean: "https://lasonotheque.org/moteur/sons/0107.mp3",
@@ -31,14 +32,9 @@
         };
 
         const instructions = {
-            deep: {
-                title: "Deep Breathing",
-                steps: ["Inhale slowly through your nose.", "Feel your belly expand.", "Exhale gently through your nose or mouth.", "Keep the rhythm smooth and steady."]
-            },
-            box: {
-                title: "Box Breathing",
-                steps: ["Inhale for the set duration.", "Hold your breath in for the same time.", "Exhale slowly for the same time.", "Hold your breath out before inhaling again."]
-            },
-            ujjayi: {
-                title: "Ujjayi (Oceanic)",
-                steps: ["Slightly constrict the back of your throat.", "Breathe in through your nose with a soft 'Haaa' sound.", "Keep that same ocean
+            deep: { title: "Deep Breathing", steps: ["Inhale slowly through your nose.", "Feel your belly expand.", "Exhale gently through your nose or mouth."] },
+            box: { title: "Box Breathing", steps: ["Inhale for the set duration.", "Hold your breath in.", "Exhale slowly.", "Hold your breath out."] },
+            ujjayi: { title: "Ujjayi (Oceanic)", steps: ["Slightly constrict the back of your throat.", "Breathe in with a soft 'ocean' sound.", "Keep that sound as you exhale."] }
+        };
+
+        function showScreen(id, mode
