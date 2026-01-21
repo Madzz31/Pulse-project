@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom Breathing Animation */
         @keyframes breatheMove {
             0%, 100% { transform: scale(1); background-color: rgba(255, 255, 255, 0.1); }
             50% { transform: scale(1.4); background-color: rgba(255, 255, 255, 0.25); }
         }
-        @keyframes textFade {
-            0%, 100% { content: "Exhale"; opacity: 0.6; }
-            50% { content: "Inhale"; opacity: 1; }
-        }
-        .breathe-circle { animation: breatheMove 8s ease-in-out infinite; }
-        .breathe-text::after { content: "Inhale"; animation: textFade 8s ease-in-out infinite; }
+        .breathe-circle { animation: breatheMove var(--speed, 8s) ease-in-out infinite; }
         .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        
+        /* Smooth text toggle based on animation progress */
+        .inhale-text { animation: fade 4s infinite; }
+        @keyframes fade { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
     </style>
 </head>
 <body class="bg-gradient-to-br from-purple-800 via-magenta-600 to-pink-500 min-h-screen text-white font-sans overflow-hidden">
@@ -26,47 +24,53 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         }
+
+        function setSpeed(seconds) {
+            document.documentElement.style.setProperty('--speed', seconds + 's');
+            // Update UI active state
+            document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('bg-white/40'));
+            event.target.classList.add('bg-white/40');
+        }
     </script>
 
-    <div id="home" class="screen min-h-screen p-8 flex flex-col items-center justify-center">
-        <h1 class="text-4xl font-bold tracking-tighter mb-2 drop-shadow-lg">Pulse Sync</h1>
-        <p class="text-white/60 text-xs uppercase tracking-[0.4em] mb-16">Connected Calm</p>
+    <div id="home" class="screen min-h-screen p-8 flex flex-col items-center justify-center text-center">
+        <h1 class="text-4xl font-bold tracking-tighter mb-2">Pulse Sync</h1>
+        <p class="text-white/60 text-xs uppercase tracking-[0.4em] mb-16">Your Rhythm, Your Pace</p>
 
         <div class="mb-20 relative">
-            <div class="w-56 h-56 rounded-full border-2 border-white/20 flex items-center justify-center">
-                <div class="w-44 h-44 rounded-full bg-white/10 backdrop-blur-xl flex flex-col items-center justify-center border border-white/30 shadow-2xl">
+            <div class="w-56 h-56 rounded-full border-2 border-white/10 flex items-center justify-center">
+                <div class="w-44 h-44 rounded-full bg-white/10 backdrop-blur-xl flex flex-col items-center justify-center border border-white/20 shadow-2xl">
                     <span class="text-5xl font-extralight">72</span>
-                    <span class="text-[10px] uppercase tracking-widest opacity-60">Your Pulse</span>
+                    <span class="text-[10px] uppercase tracking-widest opacity-60">PULSE</span>
                 </div>
             </div>
-            <div class="absolute -inset-4 bg-magenta-400/20 blur-2xl -z-10 rounded-full animate-pulse"></div>
+            <div class="absolute -inset-4 bg-magenta-400/10 blur-3xl -z-10 rounded-full animate-pulse"></div>
         </div>
 
-        <div class="w-full max-w-xs space-y-4">
-            <button onclick="showScreen('breathe')" class="w-full p-6 rounded-[2rem] glass border border-white/20 flex items-center justify-between active:scale-95 transition-all">
-                <span class="text-xl font-semibold italic">Excel</span>
-                <span class="bg-white text-magenta-600 h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold">→</span>
-            </button>
-            <p class="text-center text-white/40 text-[10px] uppercase tracking-widest">Tap to begin</p>
-        </div>
+        <button onclick="showScreen('breathe')" class="w-full max-w-xs p-6 rounded-[2rem] glass border border-white/20 flex items-center justify-between active:scale-95 transition-all shadow-xl">
+            <span class="text-xl font-semibold italic">Start</span>
+            <span class="bg-white text-magenta-600 h-10 w-10 rounded-full flex items-center justify-center text-lg font-bold">→</span>
+        </button>
     </div>
 
-    <div id="breathe" class="screen hidden min-h-screen flex flex-col items-center justify-between py-20 px-6">
-        <div class="text-center">
-            <h2 class="text-white/50 uppercase tracking-[0.3em] text-xs">Guided Session</h2>
-        </div>
+    <div id="breathe" class="screen hidden min-h-screen flex flex-col items-center justify-between py-16 px-6">
+        
+        <button onclick="showScreen('home')" class="text-white/40 text-[10px] uppercase tracking-widest hover:text-white">✕ Close</button>
 
-        <div class="relative flex items-center justify-center">
-            <div class="w-48 h-48 rounded-full border border-white/40 flex items-center justify-center breathe-circle shadow-[0_0_80px_rgba(255,255,255,0.2)]">
-                <span class="breathe-text text-xl font-light tracking-widest uppercase transition-opacity"></span>
+        <div class="flex flex-col items-center">
+            <div class="w-48 h-48 rounded-full border border-white/30 flex items-center justify-center breathe-circle shadow-[0_0_80px_rgba(255,255,255,0.1)]">
+                <span id="instruction" class="text-sm font-light tracking-[0.3em] uppercase">Breathe</span>
             </div>
-            <div class="absolute w-72 h-72 border border-white/5 rounded-full"></div>
         </div>
 
-        <button onclick="showScreen('home')" class="group flex flex-col items-center gap-3">
-            <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white/10 transition-all">✕</div>
-            <span class="text-[10px] uppercase tracking-widest text-white/40">End</span>
-        </button>
+        <div class="w-full max-w-xs text-center">
+            <p class="text-[10px] uppercase tracking-widest text-white/40 mb-4">Select Cycle Speed</p>
+            <div class="flex justify-between glass p-1 rounded-2xl border border-white/10">
+                <button onclick="setSpeed(6)" class="speed-btn flex-1 py-2 rounded-xl text-xs transition-all">6s</button>
+                <button onclick="setSpeed(8)" class="speed-btn flex-1 py-2 rounded-xl text-xs bg-white/40 transition-all">8s</button>
+                <button onclick="setSpeed(10)" class="speed-btn flex-1 py-2 rounded-xl text-xs transition-all">10s</button>
+            </div>
+        </div>
     </div>
 
 </body>
