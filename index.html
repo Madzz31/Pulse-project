@@ -24,11 +24,11 @@
         let selectedSeconds = 8;
         let currentAudio = null;
 
-        // UPDATED: High-quality, reliable meditation audio links
+        // FIXED: Using direct-link Wikimedia & Google stable audio assets
         const sounds = {
-            ocean: "https://actions.google.com/sounds/v1/water/waves_crashing_on_rock.ogg",
-            flute: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-            forest: "https://actions.google.com/sounds/v1/ambiences/forest_ambience.ogg"
+            ocean: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Waves_on_the_beach.ogg",
+            flute: "https://upload.wikimedia.org/wikipedia/commons/2/20/Flute_solo_-_Improvisation.ogg",
+            forest: "https://upload.wikimedia.org/wikipedia/commons/0/07/Birds_in_the_forest_at_dawn.ogg"
         };
 
         const instructions = {
@@ -42,4 +42,9 @@
             },
             ujjayi: {
                 title: "Ujjayi (Oceanic)",
-                steps: ["Slightly constrict the back
+                steps: ["Slightly constrict the back of your throat.", "Breathe in through your nose with a soft 'Haaa' sound.", "Keep that same ocean-like sound as you exhale.", "Focus on the sound to calm your mind."]
+            }
+        };
+
+        function showScreen(id, mode = null) {
+            document.querySelectorAll('.screen
