@@ -1,62 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Samyama</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes deepMode { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
-        @keyframes boxMode { 0%, 25% { transform: scale(1); } 25%, 50% { transform: scale(1.4); } 50%, 75% { transform: scale(1.4); } 75%, 100% { transform: scale(1); } }
-        .run-deep { animation: deepMode var(--duration) ease-in-out infinite !important; }
-        .run-box { animation: boxMode var(--duration) linear infinite !important; }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2); }
-        .btn-active { background: rgba(255, 255, 255, 0.4) !important; border: 1px solid white !important; }
+        /* BASE STYLES - Guaranteed to work in any browser */
+        body { margin: 0; padding: 0; font-family: sans-serif; background: #2d0b5a; color: white; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .screen { display: none; width: 100%; max-width: 400px; padding: 20px; flex-direction: column; align-items: center; }
+        .active { display: flex; }
+        
+        /* THE BUTTONS */
+        .btn { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 20px; margin: 10px; width: 100%; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; transition: 0.3s; }
+        .btn:hover { background: rgba(255,255,255,0.2); }
+        .btn-small { padding: 10px; font-size: 10px; border-radius: 10px; width: auto; flex: 1; }
+        .active-btn { background: rgba(255,255,255,0.4); }
+
+        /* THE BREATHING CIRCLE */
+        #main-circle { width: 200px; height: 200px; border: 10px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 40px auto; cursor: pointer; transition: transform 0.1s; }
+        
+        /* ANIMATIONS */
+        @keyframes deep { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+        @keyframes box { 0%, 25% { transform: scale(1); } 25%, 50% { transform: scale(1.5); } 50%, 75% { transform: scale(1.5); } 75%, 100% { transform: scale(1); } }
+        .run-deep { animation: deep var(--d) ease-in-out infinite; }
+        .run-box { animation: box var(--d) linear infinite; }
+
+        .hidden { display: none; }
+        .row { display: flex; gap: 10px; width: 100%; margin-top: 20px; }
     </style>
 </head>
-<body id="body-bg" class="bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500 text-white font-sans transition-all duration-1000 overflow-hidden min-h-screen">
+<body>
 
-    <div id="home" class="flex flex-col items-center justify-center min-h-screen p-8 text-center">
-        <h1 class="text-5xl font-extralight tracking-[0.2em] mb-4">SAMYAMA</h1>
-        <p class="text-white/70 text-[10px] uppercase tracking-[0.5em] mb-20">Stillness in Motion</p>
-        <button onclick="nav('mode-select')" class="w-full max-w-xs p-6 rounded-full glass flex items-center justify-between active:scale-95 transition-all">
-            <span class="text-lg font-light tracking-widest ml-6">START PRANAYAMA</span>
-            <span class="bg-white text-purple-900 h-10 w-10 rounded-full flex items-center justify-center font-bold">→</span>
-        </button>
+    <div id="home" class="screen active">
+        <h1 style="font-weight: 200; letter-spacing: 8px;">SAMYAMA</h1>
+        <p style="opacity: 0.6; font-size: 10px; letter-spacing: 4px; margin-bottom: 50px;">STILLNESS IN MOTION</p>
+        <button class="btn" onclick="nav('mode-select')">START PRANAYAMA</button>
     </div>
 
-    <div id="mode-select" class="hidden flex flex-col items-center justify-center min-h-screen p-8 space-y-4">
-        <h2 class="text-xl font-light tracking-[0.3em] mb-6 uppercase">Select Practice</h2>
-        <button onclick="initBreathe('deep')" class="w-full max-w-xs p-6 rounded-[2rem] glass uppercase text-xs tracking-widest">Deep Breathing</button>
-        <button onclick="initBreathe('box')" class="w-full max-w-xs p-6 rounded-[2rem] glass uppercase text-xs tracking-widest">Box Breathing</button>
-        <button onclick="initBreathe('ujjayi')" class="w-full max-w-xs p-6 rounded-[2rem] glass uppercase text-xs tracking-widest">Ujjayi (Oceanic)</button>
-        <button onclick="nav('home')" class="text-white/40 pt-6 text-[10px] tracking-widest uppercase">Back</button>
+    <div id="mode-select" class="screen">
+        <h3>SELECT PRACTICE</h3>
+        <button class="btn" onclick="startB('deep')">Deep Breathing</button>
+        <button class="btn" onclick="startB('box')">Box Breathing</button>
+        <button class="btn" onclick="startB('ujjayi')">Ujjayi (Oceanic)</button>
+        <p onclick="nav('home')" style="cursor:pointer; opacity:0.5; font-size:12px;">Back</p>
     </div>
 
-    <div id="breathe" class="hidden flex flex-col items-center justify-between min-h-screen py-12 px-6">
-        <div class="w-full flex justify-between items-center px-4">
-            <button onclick="nav('home')" class="text-white/50 text-[10px] uppercase tracking-widest">Exit</button>
-            <button onclick="showIns(true)" class="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center text-xs italic font-serif">i</button>
-        </div>
-
-        <div class="flex flex-col items-center">
-            <div id="main-circle" onclick="toggleRun()" class="w-64 h-64 rounded-full border-[14px] border-white/30 flex items-center justify-center shadow-2xl bg-white/5 cursor-pointer transition-all">
-                <div id="prompt" class="text-center font-bold uppercase tracking-widest text-sm">Ready?</div>
-                <div id="timer-ui" class="hidden text-center">
-                    <span id="cycle-count" class="text-6xl font-extralight">0</span>
-                    <div class="text-[9px] uppercase tracking-[0.3em] opacity-60">Cycles</div>
-                </div>
+    <div id="breathe" class="screen">
+        <div id="main-circle" onclick="toggle()">
+            <div id="txt">TAP TO START</div>
+            <div id="counter" class="hidden">
+                <span id="num" style="font-size: 40px;">0</span><br>Cycles
             </div>
-            <p id="label" class="mt-8 text-[10px] tracking-[0.3em] uppercase font-bold opacity-80"></p>
         </div>
-
-        <div class="w-full max-w-sm space-y-6">
-            <div class="glass p-2 rounded-2xl flex justify-around text-[9px] uppercase tracking-widest font-bold">
-                <button onclick="setAudio('none', this)" class="snd-btn flex-1 py-3 rounded-xl bg-white/30">Silent</button>
-                <button onclick="setAudio('flute', this)" class="snd-btn flex-1 py-3 rounded-xl">Buddha Flute</button>
-                <button onclick="setAudio('ocean', this)" class="snd-btn flex-1 py-3 rounded-xl">Ocean Waves</button>
-                <button onclick="setAudio('forest', this)" class="snd-btn flex-1 py-3 rounded-xl">Forest</button>
-            </div>
-            <div id="speeds" class="flex justify-between glass p-1 rounded-2xl gap-2"></div>
+        <h4 id="label" style="letter-spacing: 3px;">MODE</h4>
+        
+        <div class="row">
+            <button class="btn btn-small snd-btn active-btn" onclick="setS('none', this)">Silent</button>
+            <button class="btn btn-small snd-btn" onclick="setS('flute', this)">Zen</button>
+            <button class="btn btn-small snd-btn" onclick="setS('ocean', this)">Waves</button>
         </div>
+        <p onclick="nav('home')" style="margin-top:40px; cursor:pointer; opacity:0.5;">Exit</p>
     </div>
+
+    <script>
+        let mode = 'deep', running = false, count = 0, timer = null, audio = null;
+
+        const sounds = {
+            flute: "https://actions.google.com/sounds/v1/meditation/calm_meditation.ogg",
+            ocean: "https://actions.google.com/sounds/v1/water/waves_on_shore.ogg"
+        };
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(running) stop();
+        }
+
+        function startB(m) {
+            mode = m;
+            document.getElementById('label').innerText = m.toUpperCase();
+            nav('breathe');
+        }
+
+        function setS(type, btn) {
+            if(audio) { audio.pause(); audio = null; }
+            if(type !== 'none') {
+                audio = new Audio(sounds[type]);
+                audio.loop = true;
+                if(running) audio.play();
+            }
+            document.querySelectorAll('.snd-btn').forEach(b => b.classList.remove('active-btn'));
+            btn.classList.add('active-btn');
+        }
+
+        function toggle() {
+            if(!running) {
+                running = true;
+                count = 0;
+                let cycle = (mode === 'box') ? 16 : 10; // Default speeds
+                document.body.style.setProperty('--d', cycle + 's');
+                document.getElementById('main-circle').className = (mode === 'box' ? 'run-box' : 'run-deep');
+                document.getElementById('txt').classList.add('hidden');
+                document.getElementById('counter').classList.remove('hidden');
+                if(audio) audio.play();
+                timer = setInterval(() => { count++; document.getElementById('num').innerText = count; }, cycle * 1000);
+            } else {
+                stop();
+                alert("Session Complete! Total Cycles: " + count);
+            }
+        }
+
+        function stop() {
+            running = false;
+            clearInterval(timer);
+            if(audio) { audio.pause(); audio.currentTime = 0; }
+            document.getElementById('main-circle').className = "";
+            document.getElementById('txt').classList.remove('hidden');
+            document.getElementById('counter').classList.add('hidden');
+            document.getElementById('num').innerText =
