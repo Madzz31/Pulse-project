@@ -2,111 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Samyama</title>
     <style>
-        /* STYLING - Built-in so it doesn't need to download anything */
-        :root { --purple: #2d0b5a; --pink: #b030b0; --teal: #1a4a3e; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #2d0b5a; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        /* 1. RESET & BASE */
+        body { margin: 0; padding: 0; font-family: sans-serif; background: #2d0b5a; color: white; height: 100vh; overflow: hidden; text-align: center; }
         
-        .screen { display: none; width: 100%; height: 100vh; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: absolute; top: 0; left: 0; }
-        .active { display: flex; }
+        /* 2. THE NAVIGATION ENGINE (No JavaScript needed) */
+        input[type="radio"] { display: none; }
+        .screen { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         
-        /* THE BUTTONS */
-        .btn { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 20px; margin: 10px; width: 280px; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 14px; transition: 0.2s; }
-        .btn:active { background: rgba(255,255,255,0.3); transform: scale(0.98); }
-        
-        /* THE CIRCLE */
-        #circle { width: 240px; height: 240px; border: 10px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; margin: 40px 0; }
-        
-        /* ANIMATIONS */
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
-        .animating { animation: breathe 8s ease-in-out infinite; }
+        #nav-home:checked ~ #page-home { display: flex; background: linear-gradient(#2d0b5a, #b030b0); }
+        #nav-modes:checked ~ #page-modes { display: flex; background: #2d0b5a; }
+        #nav-breathe:checked ~ #page-breathe { display: flex; background: #1a4a3e; }
 
-        .hidden { display: none; }
+        /* 3. BUTTON STYLES */
+        .btn { 
+            display: inline-block; background: white; color: #2d0b5a; 
+            padding: 20px 40px; border-radius: 50px; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: bold; 
+            margin: 10px; border: none; min-width: 250px;
+        }
+        .btn:active { transform: scale(0.95); opacity: 0.9; }
+
+        /* 4. THE BREATHING BALL */
+        .ball {
+            width: 200px; height: 200px; border: 10px solid white;
+            border-radius: 50%; margin: 40px auto;
+            display: flex; align-items: center; justify-content: center;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+
         .label { font-size: 10px; letter-spacing: 4px; opacity: 0.6; text-transform: uppercase; }
     </style>
 </head>
-<body id="bg">
+<body>
 
-    <div id="view-home" class="screen active" style="background: linear-gradient(#2d0b5a, #b030b0);">
-        <h1 style="font-weight: 200; letter-spacing: 8px; margin: 0;">SAMYAMA</h1>
-        <p class="label" style="margin-bottom: 60px;">STILLNESS IN MOTION</p>
-        <button class="btn" onclick="showView('view-modes')">START PRANAYAMA</button>
+    <input type="radio" name="page" id="nav-home" checked>
+    <input type="radio" name="page" id="nav-modes">
+    <input type="radio" name="page" id="nav-breathe">
+
+    <div id="page-home" class="screen">
+        <h1 style="font-weight: 200; letter-spacing: 10px;">SAMYAMA</h1>
+        <p class="label" style="margin-bottom: 50px;">Stillness in Motion</p>
+        <label for="nav-modes" class="btn">START PRANAYAMA</label>
     </div>
 
-    <div id="view-modes" class="screen" style="background: #2d0b5a;">
+    <div id="page-modes" class="screen">
         <h2 style="font-weight: 200; letter-spacing: 3px;">SELECT PRACTICE</h2>
-        <button class="btn" onclick="start('Deep Breathing')">Deep Breathing</button>
-        <button class="btn" onclick="start('Box Breathing')">Box Breathing</button>
-        <button class="btn" onclick="start('Ujjayi')">Ujjayi (Oceanic)</button>
-        <p onclick="showView('view-home')" style="cursor:pointer; opacity:0.5; margin-top:20px; font-size:12px;">Back</p>
+        <label for="nav-breathe" class="btn">Deep Breathing</label>
+        <label for="nav-breathe" class="btn">Box Breathing</label>
+        <label for="nav-breathe" class="btn">Ujjayi (Oceanic)</label>
+        <br>
+        <label for="nav-home" style="cursor:pointer; opacity:0.5; font-size:12px; text-decoration: underline;">Back to Home</label>
     </div>
 
-    <div id="view-breathe" class="screen" style="background: #1a4a3e;">
-        <h3 id="mode-title" style="font-weight: 200; letter-spacing: 3px;">MODE</h3>
-        <div id="circle" onclick="toggle()">
-            <div id="tap-text">TAP TO START</div>
-            <div id="count-ui" class="hidden">
-                <span id="cycle-count" style="font-size: 60px; font-weight: 100;">0</span><br>
-                <span class="label">Cycles</span>
-            </div>
+    <div id="page-breathe" class="screen">
+        <h2 style="font-weight: 200; letter-spacing: 3px;">BREATHE</h2>
+        <div class="ball">
+            <span style="font-weight: bold; letter-spacing: 2px;">FOCUS</span>
         </div>
-        <p id="timer-text" style="font-size: 12px; opacity: 0.5;">00:00</p>
-        <button class="btn" style="width:120px; padding:10px; font-size:10px; margin-top:40px;" onclick="location.reload()">Exit</button>
+        <p class="label">Inhale ... Exhale</p>
+        <br><br>
+        <label for="nav-home" class="btn" style="background:none; color:white; border:1px solid white;">EXIT SESSION</label>
     </div>
 
-    <script>
-        let running = false;
-        let count = 0;
-        let timer = null;
-        let seconds = 0;
-
-        function showView(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function start(name) {
-            document.getElementById('mode-title').innerText = name.toUpperCase();
-            showView('view-breathe');
-        }
-
-        function toggle() {
-            const circle = document.getElementById('circle');
-            const tapTxt = document.getElementById('tap-text');
-            const countUI = document.getElementById('count-ui');
-
-            if (!running) {
-                running = true;
-                count = 0;
-                seconds = 0;
-                circle.classList.add('animating');
-                tapTxt.classList.add('hidden');
-                countUI.classList.remove('hidden');
-                
-                timer = setInterval(() => {
-                    seconds++;
-                    let m = Math.floor(seconds / 60).toString().padStart(2, '0');
-                    let s = (seconds % 60).toString().padStart(2, '0');
-                    document.getElementById('timer-text').innerText = m + ":" + s;
-                    
-                    // Increment breath count every 8 seconds
-                    if (seconds % 8 === 0) {
-                        count++;
-                        document.getElementById('cycle-count').innerText = count;
-                    }
-                }, 1000);
-            } else {
-                running = false;
-                clearInterval(timer);
-                circle.classList.remove('animating');
-                tapTxt.classList.remove('hidden');
-                countUI.classList.add('hidden');
-                alert("Session Complete!\nTotal Cycles: " + count + "\nTime: " + document.getElementById('timer-text').innerText);
-                document.getElementById('timer-text').innerText = "00:00";
-            }
-        }
-    </script>
 </body>
 </html>
