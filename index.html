@@ -25,16 +25,22 @@
         let currentAudio = null;
         let startTime = null;
 
-        // Reliable Open Source Audio Links
         const soundLinks = {
-            ocean: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // Smooth Flow
-            flute: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", // Calm Melodic
-            forest: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" // Ambient Nature
+            ocean: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+            flute: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+            forest: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+        };
+
+        const instructions = {
+            deep: { title: "Deep Breathing", steps: ["Inhale slowly through the nose.", "Expand your belly.", "Exhale gently through the nose."] },
+            box: { title: "Box Breathing", steps: ["Inhale (4-10s).", "Hold breath in.", "Exhale slowly.", "Hold breath out."] },
+            ujjayi: { title: "Ujjayi (Oceanic)", steps: ["Constrict back of throat.", "Inhale with 'ocean' sound.", "Maintain sound during exhale."] }
         };
 
         function showScreen(id, mode = null) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
+            
             if (id === 'breathe') {
                 document.getElementById('body-bg').className = "min-h-screen text-white font-sans bg-gradient-to-b from-emerald-800 via-green-700 to-green-300";
                 currentMode = mode;
@@ -45,21 +51,23 @@
             }
         }
 
-        function setSound(type, btn) {
-            // If sound is playing, stop it
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
+        function setupBreatheScreen() {
+            const speedControls = document.getElementById('speed-controls');
+            const speeds = (currentMode === 'box') ? [4, 6, 8, 10] : [6, 8, 10];
+            speedControls.innerHTML = speeds.map((s) => 
+                `<button onclick="changeSpeed(${s}, this)" class="speed-btn flex-1 py-3 rounded-xl text-sm border border-white/20 transition-all ${s === selectedSeconds ? 'btn-active' : ''}">${s}s</button>`
+            ).join('');
+            resetPractice(false);
+        }
 
+        function setSound(type, btn) {
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
             if (type !== 'none') {
                 currentAudio = new Audio(soundLinks[type]);
                 currentAudio.loop = true;
-                currentAudio.volume = 0.5;
-                // If practice is already active, start the new sound immediately
-                if (isActive) currentAudio.play().catch(e => console.log("Playback blocked"));
+                currentAudio.volume = 0.4;
+                if (isActive) currentAudio.play().catch(e => console.log("Blocked"));
             }
-
             document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('bg-white/40'));
             btn.classList.add('bg-white/40');
         }
@@ -77,13 +85,4 @@
             
             document.getElementById('start-prompt').classList.add('hidden');
             document.getElementById('count-display').classList.remove('hidden');
-            document.getElementById('main-circle').classList.add(currentMode === 'box' ? 'run-box' : 'run-deep');
-            
-            if (currentAudio) {
-                currentAudio.play().catch(e => console.error("Audio failed", e));
-            }
-
-            breathTimer = setInterval(() => {
-                breathCount++;
-                document.getElementById('breath-num').innerText = breathCount;
-            }, total
+            document.getElementById('main-circle').classList.add(currentMode === 'box' ? 'run-box' : 'run-
