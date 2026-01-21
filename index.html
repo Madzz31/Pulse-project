@@ -2,85 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Samyama</title>
+    <title>Samyama - Stillness</title>
     <style>
-        /* 1. LAYOUT & LEAF GRADIENTS */
-        body { margin: 0; padding: 0; font-family: sans-serif; background: #2d0b5a; color: white; height: 100vh; overflow: hidden; text-align: center; }
+        /* 1. THE LEAFY GRADIENTS */
+        body { margin: 0; padding: 0; font-family: sans-serif; background: #2d0b5a; color: white; height: 100vh; overflow: hidden; }
         
-        input[type="radio"] { display: none; }
-        .screen { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center; position: absolute; transition: background 1s; }
-        
-        /* Navigation Color Logic */
-        #nav-home:checked ~ #page-home { display: flex; background: linear-gradient(to bottom, #2d0b5a, #b030b0); }
-        #nav-modes:checked ~ #page-modes { display: flex; background: #2d0b5a; }
-        
-        /* The Leafy Green Gradient you requested */
-        #nav-breathe:checked ~ #page-breathe { 
-            display: flex; 
-            background: linear-gradient(135deg, #0a2f0a 0%, #1b4d1b 40%, #4c9a4c 100%); 
-        }
+        /* The screens */
+        .page { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .active { display: flex !important; }
 
-        /* 2. BUTTON STYLES */
+        /* Background Colors */
+        #page-home { background: linear-gradient(to bottom, #2d0b5a, #b030b0); }
+        #page-modes { background: #2d0b5a; }
+        #page-breathe { background: linear-gradient(135deg, #0a2f0a 0%, #1b4d1b 50%, #7cfc00 100%); } /* Deep to Light Leafy Green */
+
+        /* 2. BUTTONS */
         .btn { 
-            display: inline-block; background: white; color: #2d0b5a; 
-            padding: 18px 40px; border-radius: 50px; cursor: pointer; 
-            text-transform: uppercase; letter-spacing: 2px; font-weight: bold; 
-            margin: 10px; border: none; min-width: 260px;
+            background: white; color: #2d0b5a; padding: 20px; width: 280px; 
+            border-radius: 50px; cursor: pointer; text-transform: uppercase; 
+            letter-spacing: 2px; font-weight: bold; border: none; margin: 10px;
         }
-        .btn-speed { 
-            background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);
-            padding: 12px; min-width: 65px; border-radius: 12px; font-size: 13px; margin: 5px; cursor: pointer;
+        .speed-btn {
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid white;
+            padding: 15px; width: 70px; border-radius: 12px; cursor: pointer; margin: 5px;
         }
-        .active-speed { background: white !important; color: #1b4d1b !important; border-color: white; font-weight: bold; }
+        .speed-btn.selected { background: white; color: #0a2f0a; }
 
-        /* 3. BREATHING RING ANIMATIONS */
-        .circle-container {
-            width: 250px; height: 250px; border: 10px solid rgba(255,255,255,0.3);
+        /* 3. THE RING & ANIMATIONS */
+        .ring {
+            width: 250px; height: 250px; border: 10px solid rgba(255,255,255,0.4);
             border-radius: 50%; margin: 30px auto;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05);
         }
 
-        /* Standard Smooth Breath */
-        .anim-deep { animation: smoothBreath var(--dur, 8s) ease-in-out infinite; }
-        @keyframes smoothBreath {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.4); }
-        }
+        /* Smooth Mode */
+        .anim-smooth { animation: smooth var(--dur, 8s) ease-in-out infinite; }
+        @keyframes smooth { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
 
-        /* Box Breath with "Still" Hold Phases */
-        .anim-box { animation: boxBreath var(--dur, 16s) linear infinite; }
-        @keyframes boxBreath {
+        /* Box Mode (With "Holds") */
+        .anim-box { animation: box var(--dur, 16s) linear infinite; }
+        @keyframes box {
             0%, 25% { transform: scale(1); }    /* Inhale */
             25%, 50% { transform: scale(1.4); }  /* Hold Full (Still) */
             50%, 75% { transform: scale(1.4); }  /* Exhale */
             75%, 100% { transform: scale(1); }   /* Hold Empty (Still) */
         }
 
-        .label { font-size: 10px; letter-spacing: 4px; opacity: 0.7; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        .count-num { font-size: 70px; font-weight: 100; display: block; line-height: 1; }
+        .count { font-size: 70px; font-weight: 100; line-height: 1; display: block; }
+        .label { font-size: 10px; letter-spacing: 3px; opacity: 0.8; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <input type="radio" name="page" id="nav-home" checked>
-    <input type="radio" name="page" id="nav-modes">
-    <input type="radio" name="page" id="nav-breathe">
-
-    <div id="page-home" class="screen">
-        <h1 style="font-weight: 200; letter-spacing: 12px; margin: 0;">SAMYAMA</h1>
-        <p class="label" style="margin-bottom: 50px; opacity: 0.5;">Stillness in Motion</p>
-        <label for="nav-modes" class="btn">START PRANAYAMA</label>
+    <div id="page-home" class="page active">
+        <h1 style="letter-spacing: 10px; font-weight: 200;">SAMYAMA</h1>
+        <p class="label" style="margin-bottom: 50px;">Stillness in Motion</p>
+        <button class="btn" onclick="goTo('page-modes')">START PRANAYAMA</button>
     </div>
 
-    <div id="page-modes" class="screen">
+    <div id="page-modes" class="page">
         <h2 style="font-weight: 200; letter-spacing: 4px; margin-bottom: 30px;">SELECT PRACTICE</h2>
-        <label for="nav-breathe" class="btn" onclick="init('deep')">Deep Breathing</label>
-        <label for="nav-breathe" class="btn" onclick="init('box')">Box Breathing</label>
-        <label for="nav-breathe" class="btn" onclick="init('ujjayi')">Ujjayi (Oceanic)</label>
-        <br>
-        <label for="nav-home" style="cursor:pointer; opacity:0.5; font-size:12px; margin-top: 20px;">Back</label>
+        <button class="btn" onclick="startPractice('DEEP BREATHING', 'smooth')">Deep Breathing</button>
+        <button class="btn" onclick="startPractice('BOX BREATHING', 'box')">Box Breathing</button>
+        <button class="btn" onclick="startPractice('UJJAYI', 'smooth')">Ujjayi (Oceanic)</button>
+        <p onclick="goTo('page-home')" style="cursor:pointer; opacity:0.5; margin-top:20px;">Back</p>
     </div>
 
-    <div id="page-breathe" class="screen">
-        <h3 id="m-name" style="font-weight: 200; letter-spacing: 4px; margin: 0;">PRACTICE
+    <div id="page-breathe" class="page">
+        <h3 id="mode-title" style="font-weight: 200; letter-spacing: 4px; margin: 0;">PRACTICE</h3>
+        
+        <div id="main-ring" class="ring">
+            <div>
+                <span id="cycle-num" class="count">0</span>
+                <span class="label">Cycles</span>
+            </div>
+        </div>
+
+        <div id="controls">
+            <p class="label">Rhythm (Seconds)</p>
+            <button class="speed-btn" onclick="setSpeed(4)">4s</button>
+            <button class="speed-btn" onclick="setSpeed(6)">6s</button>
+            <button class="speed-btn selected" id="default-speed" onclick="setSpeed(8)">8s</button>
+            <button class="speed-btn" onclick="setSpeed(10)">10s</button>
+        </div>
+
+        <button class="btn" style="background:none; color:white; border:1px solid white; margin-top: 40px; width: 150px;" onclick="location.reload()">EXIT</button>
+    </div>
+
+    <script>
+        let currentModeType = 'smooth';
+        let currentSeconds = 8;
+        let cycleCount = 0;
+        let timerInterval = null;
+
+        function goTo(id) {
+            // Force-hide all pages
+            document.getElementById('page-home').classList.remove('active');
+            document.getElementById('page-modes').classList.remove('active
