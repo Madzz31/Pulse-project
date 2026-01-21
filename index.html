@@ -4,103 +4,78 @@
     <meta charset="UTF-8">
     <title>Samyama</title>
     <style>
-        /* This CSS is written to be impossible to break */
-        body { background-color: #2d0b5a; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .page { display: none; }
-        .visible { display: block; }
+        /* CORE SETUP */
+        body { background: #2d0b5a; color: white; font-family: sans-serif; margin: 0; text-align: center; height: 100vh; overflow: hidden; }
         
-        .main-button { 
-            background: white; color: #2d0b5a; border: none; 
-            padding: 20px; width: 100%; max-width: 300px; 
-            border-radius: 50px; font-weight: bold; font-size: 16px; 
-            cursor: pointer; margin: 10px 0; 
-        }
-        
-        .circle { 
-            width: 200px; height: 200px; border: 10px solid white; 
-            border-radius: 50%; margin: 50px auto; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer;
+        /* THE NO-JS NAVIGATION ENGINE */
+        .page { display: none; padding: 40px 20px; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
+        #nav-mode:checked ~ #p-mode { display: flex; }
+        #nav-breathe:checked ~ #p-breathe { display: flex; }
+        #nav-home:checked ~ #p-home { display: flex; }
+        input[type="radio"] { display: none; }
+
+        /* BUTTONS */
+        .btn { 
+            display: block; background: white; color: #2d0b5a; 
+            padding: 20px; width: 280px; border-radius: 50px; 
+            margin: 10px auto; text-decoration: none; 
+            font-weight: bold; cursor: pointer; border: none;
         }
 
-        /* Very simple animation */
-        @keyframes breathe {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
+        /* THE BREATHE CIRCLE */
+        .circle {
+            width: 200px; height: 200px; border: 8px solid white;
+            border-radius: 50%; margin: 40px auto;
+            display: flex; align-items: center; justify-content: center;
         }
-        .animating { animation: breathe 10s ease-in-out infinite; }
+
+        /* ANIMATION */
+        @keyframes breath {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        .animating { animation: breath 10s ease-in-out infinite; }
+        
+        .footer-link { margin-top: 30px; opacity: 0.6; cursor: pointer; font-size: 14px; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="p1" class="page visible">
-        <h1 style="letter-spacing: 5px; margin-top: 100px;">SAMYAMA</h1>
-        <p style="opacity: 0.7; margin-bottom: 50px;">STILLNESS IN MOTION</p>
-        <button class="main-button" onclick="showPage('p2')">START PRANAYAMA</button>
+    <input type="radio" name="nav" id="nav-home" checked>
+    <input type="radio" name="nav" id="nav-mode">
+    <input type="radio" name="nav" id="nav-breathe">
+
+    <div id="p-home" class="page">
+        <h1 style="letter-spacing: 8px; font-weight: 200;">SAMYAMA</h1>
+        <p style="letter-spacing: 4px; font-size: 10px; margin-bottom: 60px;">STILLNESS IN MOTION</p>
+        <label for="nav-mode" class="btn">START PRANAYAMA</label>
     </div>
 
-    <div id="p2" class="page">
-        <h2>SELECT MODE</h2>
-        <button class="main-button" onclick="startPractice('Deep Breathing')">Deep Breathing</button><br>
-        <button class="main-button" onclick="startPractice('Box Breathing')">Box Breathing</button><br>
-        <button class="main-button" onclick="startPractice('Ujjayi')">Ujjayi (Oceanic)</button><br>
-        <p onclick="showPage('p1')" style="cursor:pointer; text-decoration: underline; margin-top: 20px;">Back</p>
+    <div id="p-mode" class="page">
+        <h2 style="font-weight: 200;">SELECT PRACTICE</h2>
+        <label for="nav-breathe" class="btn" onclick="document.getElementById('m-title').innerText='DEEP BREATHING'">Deep Breathing</label>
+        <label for="nav-breathe" class="btn" onclick="document.getElementById('m-title').innerText='BOX BREATHING'">Box Breathing</label>
+        <label for="nav-breathe" class="btn" onclick="document.getElementById('m-title').innerText='UJJAYI'">Ujjayi (Oceanic)</label>
+        <label for="nav-home" class="footer-link">Back</label>
     </div>
 
-    <div id="p3" class="page">
-        <h2 id="modeTitle">MODE</h2>
-        <div id="ball" class="circle" onclick="runBreath()">
-            <span id="ballText">TAP TO START</span>
+    <div id="p-p-breathe" class="page" id="p-breathe">
+        <h2 id="m-title" style="letter-spacing: 3px; font-weight: 200;">PRACTICE</h2>
+        
+        <div class="circle animating">
+            <span id="status">BREATHE</span>
         </div>
-        <p id="counter">Cycles: 0</p>
-        <button class="main-button" style="background:none; color:white; border:1px solid white;" onclick="location.reload()">EXIT</button>
+
+        <div style="margin-top: 20px;">
+            <p style="font-size: 12px; opacity: 0.7;">Sound is currently disabled to ensure stability.</p>
+        </div>
+
+        <label for="nav-home" class="btn" style="background:none; color:white; border:1px solid white; margin-top: 40px;">EXIT SESSION</label>
     </div>
 
     <script>
-        // NAVIGATION LOGIC
-        function showPage(pageId) {
-            // Hide all pages
-            document.getElementById('p1').style.display = 'none';
-            document.getElementById('p2').style.display = 'none';
-            document.getElementById('p3').style.display = 'none';
-            // Show the one we want
-            document.getElementById(pageId).style.display = 'block';
-        }
-
-        // PRACTICE LOGIC
-        let count = 0;
-        let running = false;
-        let timer = null;
-
-        function startPractice(name) {
-            document.getElementById('modeTitle').innerText = name;
-            showPage('p3');
-        }
-
-        function runBreath() {
-            const ball = document.getElementById('ball');
-            const txt = document.getElementById('ballText');
-            const cntDisplay = document.getElementById('counter');
-
-            if (!running) {
-                running = true;
-                count = 0;
-                ball.classList.add('animating');
-                txt.innerText = "BREATHE";
-                // Increment every 10 seconds
-                timer = setInterval(function() {
-                    count++;
-                    cntDisplay.innerText = "Cycles: " + count;
-                }, 10000);
-            } else {
-                running = false;
-                clearInterval(timer);
-                ball.classList.remove('animating');
-                txt.innerText = "TAP TO START";
-                alert("Session Finished!\nTotal Cycles: " + count);
-            }
-        }
+        // Minimal logic just for the title label
+        // The navigation is handled by the CSS above
     </script>
 
 </body>
