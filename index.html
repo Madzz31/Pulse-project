@@ -11,23 +11,22 @@
             50% { transform: scale(1.4); }
         }
 
-        /* Box breathing: Hold, Inhale, Hold, Exhale */
+        /* Box breathing: Hold (1), Inhale (2), Hold (3), Exhale (4) */
         @keyframes boxMode {
-            0%, 25% { transform: scale(1); }      /* Hold Out */
-            25%, 50% { transform: scale(1.4); }    /* Inhale */
-            50%, 75% { transform: scale(1.4); }    /* Hold In */
-            75%, 100% { transform: scale(1); }     /* Exhale */
+            0%, 25% { transform: scale(1); }      
+            25%, 50% { transform: scale(1.4); }    
+            50%, 75% { transform: scale(1.4); }    
+            75%, 100% { transform: scale(1); }     
         }
 
-        /* Classes applied by JavaScript */
         .animate-deep { animation: deepMode var(--duration) linear infinite; }
         .animate-box { animation: boxMode var(--duration) linear infinite; }
         
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
-        .btn-active { background: rgba(236, 72, 153, 0.4); border-color: #ec4899 !important; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); }
+        .btn-active { background: rgba(255, 255, 255, 0.3); border-color: white !important; }
     </style>
 </head>
-<body id="body-bg" class="transition-all duration-1000 min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-600">
+<body id="body-bg" class="transition-all duration-1000 min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500">
 
     <script>
         let currentMode = 'deep';
@@ -40,10 +39,11 @@
             const body = document.getElementById('body-bg');
 
             if (id === 'home' || id === 'mode-select') {
-                body.className = "min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-600";
+                body.className = "min-h-screen text-white font-sans bg-gradient-to-b from-purple-900 via-purple-700 to-pink-500";
                 stopCounter();
             } else if (id === 'breathe') {
-                body.className = "min-h-screen text-white font-sans bg-gradient-to-b from-emerald-900 via-green-700 to-green-400";
+                // Leafy Green to Light Green Gradient
+                body.className = "min-h-screen text-white font-sans bg-gradient-to-b from-emerald-800 via-green-700 to-green-300";
                 currentMode = mode;
                 setupBreatheScreen();
             }
@@ -58,30 +58,27 @@
                 class="speed-btn flex-1 py-3 rounded-xl text-sm border border-white/20 transition-all ${index === 1 ? 'btn-active' : ''}">${s}s</button>`
             ).join('');
 
-            applySettings(speeds[1]); // Set default speed
+            applySettings(speeds[1]); 
         }
 
         function applySettings(s, btn = null) {
-            // Box mode cycle is 4 times the single phase (In-Hold-Out-Hold)
             const totalCycleTime = currentMode === 'box' ? s * 4 : s;
             document.documentElement.style.setProperty('--duration', totalCycleTime + 's');
 
             const circle = document.getElementById('main-circle');
-            const statusText = document.getElementById('status-text');
+            const modeLabel = document.getElementById('mode-label');
 
-            // Force animation restart
             circle.style.animation = 'none';
             circle.offsetHeight; 
-            circle.className = `w-56 h-56 rounded-full border-[12px] border-white/40 flex items-center justify-center shadow-2xl ${currentMode === 'box' ? 'animate-box' : 'animate-deep'}`;
+            circle.className = `w-56 h-56 rounded-full border-[14px] border-white/40 flex items-center justify-center shadow-2xl ${currentMode === 'box' ? 'animate-box' : 'animate-deep'}`;
             
             if(btn) {
                 document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('btn-active'));
                 btn.classList.add('btn-active');
             }
 
-            statusText.innerText = currentMode === 'box' ? "Box Breathing" : "Deep Breathing";
+            modeLabel.innerText = currentMode === 'box' ? "Box Breathing" : "Deep Breathing";
 
-            // Breath Counter Logic
             stopCounter();
             breathCount = 0;
             document.getElementById('breath-num').innerText = "0";
@@ -95,46 +92,44 @@
     </script>
 
     <div id="home" class="screen min-h-screen flex flex-col items-center justify-center p-8 text-center">
-        <h1 class="text-5xl font-light tracking-[0.2em] mb-4">SAMYAMA</h1>
-        <p class="text-white/70 text-xs uppercase tracking-[0.4em] mb-20 italic">The Path of Stillness</p>
+        <h1 class="text-5xl font-extralight tracking-[0.2em] mb-4">SAMYAMA</h1>
+        <p class="text-white/70 text-[10px] uppercase tracking-[0.5em] mb-20 italic">Stillness in Motion</p>
         
         <button onclick="showScreen('mode-select')" class="w-full max-w-xs p-6 rounded-full glass border border-white/30 flex items-center justify-between active:scale-95 transition-all">
             <span class="text-lg font-light tracking-widest ml-6">START PRANAYAMA</span>
-            <span class="bg-pink-500 text-white h-10 w-10 rounded-full flex items-center justify-center text-lg shadow-lg">→</span>
+            <span class="bg-white text-purple-900 h-10 w-10 rounded-full flex items-center justify-center text-lg">→</span>
         </button>
     </div>
 
     <div id="mode-select" class="screen hidden min-h-screen flex flex-col items-center justify-center p-8 space-y-6">
-        <h2 class="text-xl font-light tracking-widest mb-10 uppercase">Select Style</h2>
+        <h2 class="text-xl font-light tracking-[0.3em] mb-10 uppercase">Select Practice</h2>
         
         <button onclick="showScreen('breathe', 'deep')" class="w-full max-w-xs p-8 rounded-[2.5rem] glass border border-white/20 text-center active:scale-95 transition-all">
-            <h3 class="text-xl font-semibold">Deep Breathing</h3>
-            <p class="text-[10px] opacity-60 mt-1 uppercase tracking-widest">Continuous</p>
+            <h3 class="text-xl font-medium tracking-wide">Deep Breathing</h3>
         </button>
 
         <button onclick="showScreen('breathe', 'box')" class="w-full max-w-xs p-8 rounded-[2.5rem] glass border border-white/20 text-center active:scale-95 transition-all">
-            <h3 class="text-xl font-semibold">Box Breathing</h3>
-            <p class="text-[10px] opacity-60 mt-1 uppercase tracking-widest">With Holds</p>
+            <h3 class="text-xl font-medium tracking-wide">Box Breathing</h3>
         </button>
 
-        <button onclick="showScreen('home')" class="text-white/40 pt-10 text-xs tracking-widest uppercase">Back</button>
+        <button onclick="showScreen('home')" class="text-white/40 pt-10 text-[10px] tracking-widest uppercase">Back</button>
     </div>
 
     <div id="breathe" class="screen hidden min-h-screen flex flex-col items-center justify-between py-16 px-6">
-        <button onclick="showScreen('home')" class="text-white/50 text-[10px] uppercase tracking-widest">End Pranayama</button>
+        <button onclick="showScreen('home')" class="text-white/50 text-[10px] uppercase tracking-widest">End Practice</button>
 
         <div class="flex flex-col items-center">
-            <div id="main-circle" class="w-56 h-56 rounded-full border-[12px] border-white/40 flex items-center justify-center">
+            <div id="main-circle" class="w-56 h-56 rounded-full border-[14px] border-white/40 flex items-center justify-center">
                 <div class="flex flex-col items-center">
                     <span id="breath-num" class="text-6xl font-extralight">0</span>
                     <span class="text-[10px] opacity-60 tracking-widest uppercase mt-1">Cycles</span>
                 </div>
             </div>
-            <p id="status-text" class="mt-12 text-xs tracking-[0.3em] uppercase opacity-80"></p>
+            <p id="mode-label" class="mt-12 text-xs tracking-[0.3em] uppercase font-light text-white/90"></p>
         </div>
 
         <div class="w-full max-w-xs text-center">
-            <p class="text-[10px] uppercase tracking-widest text-white/50 mb-4">Duration per phase</p>
+            <p class="text-[10px] uppercase tracking-widest text-white/50 mb-4 font-bold">Duration per phase</p>
             <div id="speed-controls" class="flex justify-between glass p-1 rounded-2xl border border-white/10 gap-2"></div>
         </div>
     </div>
