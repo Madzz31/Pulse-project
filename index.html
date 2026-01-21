@@ -2,97 +2,120 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Samyama</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samyama - Breathing</title>
     <style>
-        /* 1. THE ENGINE - NO JAVASCRIPT NAVIGATION */
-        input[type="radio"] { display: none; }
-        .page { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center; position: absolute; text-align: center; }
-        
-        /* Logic: If radio is checked, show the corresponding page */
-        #nav-home:checked ~ #p-home { display: flex; background: linear-gradient(#2d0b5a, #b030b0); }
-        #nav-modes:checked ~ #p-modes { display: flex; background: #2d0b5a; }
-        #nav-deep:checked ~ #p-breathe { display: flex; --mode: 'deep'; }
-        #nav-box:checked ~ #p-breathe { display: flex; --mode: 'box'; }
-        #nav-ujjayi:checked ~ #p-breathe { display: flex; --mode: 'ujjayi'; }
+        /* 1. THE LOOK: LEAFY GREEN GRADIENT & PURPLE */
+        :root {
+            --deep-leaf: #0a2f0a;
+            --mid-leaf: #1b4d1b;
+            --light-leaf: #a2ff00;
+            --purple: #2d0b5a;
+        }
 
-        /* THE LEAF GREEN GRADIENT */
-        #p-breathe { background: linear-gradient(135deg, #0a2f0a 0%, #1b4d1b 50%, #7cfc00 100%); }
+        body, html { margin: 0; padding: 0; font-family: -apple-system, sans-serif; color: white; overflow: hidden; height: 100vh; }
+        
+        /* Navigation - Simple hiding/showing */
+        .page { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .active { display: flex; }
+
+        /* Backgrounds */
+        #home-page { background: linear-gradient(to bottom, var(--purple), #b030b0); }
+        #mode-page { background: var(--purple); }
+        #breathe-page { background: linear-gradient(135deg, var(--deep-leaf) 0%, var(--mid-leaf) 40%, var(--light-leaf) 100%); }
 
         /* 2. THE BUTTONS */
-        body { margin: 0; font-family: sans-serif; color: white; background: #2d0b5a; overflow: hidden; }
-        .btn { 
-            display: inline-block; background: white; color: #2d0b5a; padding: 20px 40px; 
-            border-radius: 50px; cursor: pointer; text-transform: uppercase; 
-            letter-spacing: 2px; font-weight: bold; margin: 10px; min-width: 250px;
+        .btn {
+            background: white; color: var(--purple); padding: 20px 40px; border-radius: 50px;
+            text-transform: uppercase; letter-spacing: 2px; font-weight: bold; border: none;
+            cursor: pointer; margin: 10px; min-width: 280px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .btn:active { transform: scale(0.98); }
 
-        /* 3. THE RING & ANIMATIONS */
-        .ring-box {
-            width: 250px; height: 250px; border: 10px solid rgba(255,255,255,0.4);
-            border-radius: 50%; margin: 30px auto;
+        .speed-bar { display: flex; gap: 10px; margin-top: 20px; }
+        .speed-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid white; color: white;
+            padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 14px;
+        }
+        .speed-btn.selected { background: white; color: var(--mid-leaf); font-weight: bold; }
+
+        /* 3. THE BREATHING RING */
+        .ring-container {
+            width: 260px; height: 260px; border: 12px solid rgba(255,255,255,0.2);
+            border-radius: 50%; margin: 40px auto;
             display: flex; align-items: center; justify-content: center;
-            animation: breathe-smooth 8s ease-in-out infinite;
+            position: relative;
         }
 
-        /* Speed Control (CSS Variables) */
-        #s4:checked ~ #p-breathe .ring-box { animation-duration: 4s; }
-        #s6:checked ~ #p-breathe .ring-box { animation-duration: 6s; }
-        #s8:checked ~ #p-breathe .ring-box { animation-duration: 8s; }
-        #s10:checked ~ #p-breathe .ring-box { animation-duration: 10s; }
-
-        @keyframes breathe-smooth { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
-        
-        .speed-opt { 
-            display: inline-block; padding: 10px 20px; border: 1px solid white; 
-            border-radius: 10px; margin: 5px; cursor: pointer; font-size: 14px;
+        /* Animations */
+        @keyframes smooth { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+        @keyframes box { 
+            0%, 25% { transform: scale(1); } 
+            25%, 50% { transform: scale(1.4); } 
+            50%, 75% { transform: scale(1.4); } 
+            75%, 100% { transform: scale(1); } 
         }
+
+        .anim-smooth { animation: smooth var(--dur, 8s) ease-in-out infinite; }
+        .anim-box { animation: box var(--dur, 16s) linear infinite; }
+
+        .counter { font-size: 60px; font-weight: 100; display: block; }
+        .label { font-size: 10px; letter-spacing: 3px; opacity: 0.7; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <input type="radio" name="nav" id="nav-home" checked>
-    <input type="radio" name="nav" id="nav-modes">
-    <input type="radio" name="nav" id="nav-deep">
-    <input type="radio" name="nav" id="nav-box">
-    <input type="radio" name="nav" id="nav-ujjayi">
-
-    <input type="radio" name="speed" id="s4">
-    <input type="radio" name="speed" id="s6">
-    <input type="radio" name="speed" id="s8" checked>
-    <input type="radio" name="speed" id="s10">
-
-    <div id="p-home" class="page">
-        <h1 style="letter-spacing: 10px; font-weight: 200;">SAMYAMA</h1>
-        <p style="font-size: 10px; letter-spacing: 4px; opacity: 0.6; margin-bottom: 40px;">Stillness in Motion</p>
-        <label for="nav-modes" class="btn">START PRANAYAMA</label>
+    <div id="home-page" class="page active">
+        <h1 style="letter-spacing: 12px; font-weight: 200;">SAMYAMA</h1>
+        <p class="label" style="margin-bottom: 60px;">Stillness in Motion</p>
+        <button class="btn" onclick="show('mode-page')">START PRANAYAMA</button>
     </div>
 
-    <div id="p-modes" class="page">
-        <h2 style="font-weight: 200; letter-spacing: 4px;">SELECT PRACTICE</h2>
-        <label for="nav-deep" class="btn">Deep Breathing</label>
-        <label for="nav-box" class="btn">Box Breathing</label>
-        <label for="nav-ujjayi" class="btn">Ujjayi (Oceanic)</label>
-        <label for="nav-home" style="margin-top: 20px; cursor: pointer; opacity: 0.5;">Back</label>
+    <div id="mode-page" class="page">
+        <h2 style="font-weight: 200; letter-spacing: 4px; margin-bottom: 30px;">SELECT PRACTICE</h2>
+        <button class="btn" onclick="start('DEEP BREATHING', 'smooth')">Deep Breathing</button>
+        <button class="btn" onclick="start('BOX BREATHING', 'box')">Box Breathing</button>
+        <button class="btn" onclick="start('UJJAYI', 'smooth')">Ujjayi (Oceanic)</button>
+        <p onclick="show('home-page')" style="cursor:pointer; opacity:0.5; margin-top:20px;">Back</p>
     </div>
 
-    <div id="p-breathe" class="page">
-        <h3 style="letter-spacing: 3px; font-weight: 200; margin: 0;">PRACTICE</h3>
+    <div id="breathe-page" class="page">
+        <h3 id="mode-title" style="font-weight: 200; letter-spacing: 4px; margin: 0;">PRACTICE</h3>
         
-        <div class="ring-box">
-            <span style="font-weight: bold; letter-spacing: 2px;">FOCUS</span>
+        <div id="ring" class="ring-container">
+            <div>
+                <span id="cycle-count" class="counter">0</span>
+                <span class="label">Cycles</span>
+            </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <p style="font-size: 10px; letter-spacing: 2px; opacity: 0.8;">SET RHYTHM (SECONDS)</p>
-            <label for="s4" class="speed-opt">4s</label>
-            <label for="s6" class="speed-opt">6s</label>
-            <label for="s8" class="speed-opt">8s</label>
-            <label for="s10" class="speed-opt">10s</label>
+        <div class="speed-bar">
+            <button class="speed-btn" onclick="setSpeed(4, this)">4s</button>
+            <button class="speed-btn" onclick="setSpeed(6, this)">6s</button>
+            <button class="speed-btn selected" onclick="setSpeed(8, this)">8s</button>
+            <button class="speed-btn" onclick="setSpeed(10, this)">10s</button>
         </div>
 
-        <label for="nav-home" class="btn" style="background:none; color:white; border:1px solid white; width: 150px; padding: 15px;">EXIT</label>
+        <button class="btn" style="background:none; color:white; border:1px solid white; margin-top: 40px; width: 150px;" onclick="location.reload()">EXIT</button>
     </div>
 
-</body>
-</html>
+    <script>
+        let currentType = 'smooth';
+        let currentSec = 8;
+        let cycles = 0;
+        let timer = null;
+
+        function show(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function start(name, type) {
+            currentType = type;
+            document.getElementById('mode-title').innerText = name;
+            show('breathe-page');
+            updateAnimation();
+        }
+
+        function setSpeed(s, btn) {
+            currentSec = s;
